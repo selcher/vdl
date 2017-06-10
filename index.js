@@ -168,7 +168,7 @@ const downloadFromVideoInfo = (videoInfo) => {
  */
 
 program
-    .version('1.0.0')
+    .version('1.0.2')
     .option('-u, --url [urlpath]', 'Add url')
     .option('-f, --file [filepath]', 'Add file')
     .parse(process.argv);
@@ -197,7 +197,7 @@ if (program.file) {
 
     const searchAndDownload = url => {
 
-        const searchDone = null;
+        let searchDone = null;
 
         // If the suffix doesn't start with 'http',
         // assume it's a search.
