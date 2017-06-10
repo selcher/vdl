@@ -1,6 +1,6 @@
 {
   "name": "vdl",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Command line tool for downloading videos from youtube",
   "bin": {
     "vdl": "./index.js"
@@ -9,6 +9,10 @@
   "scripts": {
     "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository":{
+    "type": "git",
+    "url": "https://github.com/selcher/vdl"
   },
   "keywords": "command, cli, youtube, download",
   "author": "Selcher <selcher123@gmail.com> (http://selcher.github.io)",
