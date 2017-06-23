@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+const package = require('./package.json');
 const process = require('process');
 const fs = require('fs');
 const readline = require('readline');
@@ -9,6 +10,7 @@ const ytdl = require('ytdl-core');
 const youtubedl = require('youtube-dl');
 const translate = require('translate-google');
 
+const version = package.version;
 const currentDir = process.cwd();
 const log = console.log;
 
@@ -176,7 +178,7 @@ const downloadFromVideoInfo = (videoInfo) => {
  */
 
 program
-    .version('1.0.2')
+    .version(version)
     .option('-u, --url [urlpath]', 'Add url')
     .option('-f, --file [filepath]', 'Add file')
     .parse(process.argv);
