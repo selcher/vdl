@@ -126,13 +126,21 @@ const searchVideoInfo = (keyword) => {
 };
 
 const formatVideoInfo = (info) => {
-    const strippedTitle = (info.title.replace(/[\s|:?\.\"\\\/]/g, '-'));
+    const stripCharacters = (str) => {
+        let updatedStr = str;
+
+        updatedStr = updatedStr.replace(/[\s|:?\.\\\/]/g, '-');
+        updatedStr = updatedStr.replace(/[\"]/g, '');
+
+        return updatedStr;
+    };
+    const strippedTitle = stripCharacters(info.title);
 
     return new Promise((resolve, reject) => {
         translate(strippedTitle, {to: 'en'}).then(
             translatedTitle => resolve({
                 info,
-                title: translatedTitle
+                title: stripCharacters(translatedTitle)
             })
         ).catch(
             err => reject(err)
