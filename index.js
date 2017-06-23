@@ -240,4 +240,5 @@ if (program.file) {
 
 if (!commandFound) {
     log('Command not found.');
+    rl.close();
 }
