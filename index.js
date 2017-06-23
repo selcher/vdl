@@ -20,44 +20,53 @@ const log = console.log;
 
 const extension = 'mp4';
 const msg = {
+    about: [
+        chalk.dim(` VDL - ${version}`)
+    ].join(' '),
     getInfo: (url) => [
-            chalk.white('+'),
-            chalk.blue('Getting info:'),
+            chalk.blue(' +'),
+            chalk.white('Getting info:'),
             chalk.dim(url)
         ].join(' '),
     errGetInfo: (url) => [
-            chalk.white('✖'),
-            chalk.red('Error getting video info:'),
+            chalk.red(' ✖'),
+            chalk.yellow('Error getting video info:'),
             chalk.dim(url)
         ].join(' '),
     searchInfo: (keyword) => [
-            chalk.white('+'),
-            chalk.blue('Searching video info:'),
+            chalk.blue(' +'),
+            chalk.white('Searching video info:'),
             chalk.dim(keyword)
         ].join(' '),
     errSearchInfo: (keyword) => [
-            chalk.white('✖'),
-            chalk.red('Error searching video info:'),
+            chalk.red(' ✖'),
+            chalk.yellow('Error searching video info:'),
             chalk.dim(keyword)
         ].join(' '),
     downloading: (title) => [
-            chalk.white('-'),
-            chalk.blue('Downloading:'),
+            chalk.blue(' +'),
+            chalk.white('Downloading:'),
             chalk.dim(`${title}.${extension}`)
         ].join(' '),
     progress: (downloaded, total) => [
-            chalk.white('-'),
-            chalk.blue('Progress:'),
+            chalk.blue(' +'),
+            chalk.dim('Progress:'),
             chalk.yellow(`[ ${downloaded} / ${total} ]`)
         ].join(' '),
     readFile: (filePath) => [
-            chalk.white('+'),
-            chalk.blue('Reading file:'),
+            chalk.blue(' +'),
+            chalk.white('Reading file:'),
             chalk.dim(filePath)
         ].join(' '),
+    commandNotFound: [
+            chalk.red(' !'),
+            chalk.yellow('Command Not Found'),
+            chalk.red('\n !'),
+            chalk.yellow('Use "vdl -h" for help')
+        ].join(' '),
     done: [
-            chalk.white('✔'),
-            chalk.green('Done')
+            chalk.green(' ✔'),
+            chalk.dim('Done')
         ].join(' ')
 };
 
@@ -185,9 +194,14 @@ program
 
 let commandFound = false;
 
+const onCommandFound = () => {
+    commandFound = true;
+    log(msg.about);
+};
+
 if (program.url) {
 
-    commandFound = true;
+    onCommandFound();
 
     getVideoInfo(program.url)
         .then(info => formatVideoInfo(info))
@@ -197,7 +211,7 @@ if (program.url) {
 
 if (program.file) {
 
-    commandFound = true;
+    onCommandFound();
 
     const filePath = program.file;
     const content = fs.readFileSync(program.file, 'utf-8');
@@ -239,6 +253,7 @@ if (program.file) {
 }
 
 if (!commandFound) {
-    log('Command not found.');
+    log(msg.about);
+    log(msg.commandNotFound);
     rl.close();
 }
