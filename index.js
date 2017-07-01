@@ -165,8 +165,8 @@ const formatVideoInfo = (info) => {
 };
 
 const downloadFromVideoInfo = (videoInfo) => {
-    let dlStream = ytdl.downloadFromInfo(videoInfo.info);
     const title = videoInfo.title;
+    let dlStream = ytdl.downloadFromInfo(videoInfo.info);
 
     log(msg.downloading(title));
 
@@ -206,7 +206,6 @@ const onCommandFound = () => {
 };
 
 if (program.url) {
-
     onCommandFound();
 
     getVideoInfo(program.url)
@@ -216,7 +215,6 @@ if (program.url) {
 }
 
 if (program.file) {
-
     onCommandFound();
 
     const filePath = program.file;
@@ -225,8 +223,7 @@ if (program.file) {
 
     log(msg.readFile(filePath));
 
-    const searchAndDownload = url => {
-
+    const searchAndDownload = (url) => {
         let searchDone = null;
 
         // If the suffix doesn't start with 'http',
