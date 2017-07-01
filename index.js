@@ -236,17 +236,19 @@ if (program.file) {
             .then(searchResult => getVideoInfo(searchResult.url))
             .then(info => formatVideoInfo(info))
             .then(videoInfo => downloadFromVideoInfo(videoInfo))
-            .then(() => {
-                const nextUrl = contentList.shift();
+            .then(downloadNextInFile)
+            .catch(downloadNextInFile);
+    };
 
-                if (nextUrl) {
-                    searchAndDownload(nextUrl);
-                }
-                else {
-                    done();
-                }
-            })
-            .catch(() => done());
+    const downloadNextInFile = () => {
+        const nextUrl = contentList.shift();
+
+        if (nextUrl) {
+            searchAndDownload(nextUrl);
+        }
+        else {
+            done();
+        }
     };
 
     searchAndDownload(contentList.shift());
