@@ -48,6 +48,11 @@ const msg = {
             chalk.white('Downloading:'),
             chalk.dim(`${title}.${extension}`)
         ].join(' '),
+    downloaded: (title) => [
+            chalk.green(' ✔'),
+            chalk.white('Saved:'),
+            chalk.dim(`${title}.${extension}`)
+        ].join(' '),
     progress: (downloaded, total) => [
             chalk.blue(' +'),
             chalk.dim('Progress:'),
@@ -176,6 +181,7 @@ const downloadFromVideoInfo = (videoInfo) => {
             if (downloaded === total) {
                 readline.cursorTo(process.stdout, 0, null);
                 readline.clearLine(process.stdout, 0);
+                log(msg.downloaded(title));
                 resolve();
             }
         });
