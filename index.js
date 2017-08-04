@@ -68,6 +68,14 @@ const msg = {
             chalk.white('Reading file:'),
             chalk.dim(filePath)
         ].join(' '),
+    itemsFound: (total) => [
+            chalk.blue(' +'),
+            chalk.white(`Found ${total} items`)
+        ].join(' '),
+    itemOfTotal: (current, total) => [
+            chalk.blue(' +'),
+            chalk.white(`[ ${current} / ${total} ]`)
+        ].join(' '),
     commandNotFound: [
             chalk.red(' !'),
             chalk.yellow('Command Not Found'),
@@ -245,13 +253,42 @@ if (program.file) {
     onCommandFound();
 
     const filePath = program.file;
-    const content = fs.readFileSync(program.file, 'utf-8');
-    const contentList = content.split('\n');
 
     log(msg.readFile(filePath));
 
+    const getFileContentAsList = pathToFile => {
+        const newLineChars = /\r\n/g;
+        const invalidChars = /\t\r\n\v\f/g;
+        const content = fs.readFileSync(pathToFile, 'utf-8');
+        let fileContentList = content.replace(newLineChars, '\n')
+            .split('\n')
+            .map(url => url ? url.replace(invalidChars, '') : '')
+            .filter(url => url);
+
+        return fileContentList;
+    };
+
+    const contentList = getFileContentAsList(filePath);
+    const totalItems = contentList.length;
+
+    log(msg.itemsFound(totalItems));
+
+    const count = ((total) => {
+        let counter = 1;
+
+        return (
+            () => {
+                log(
+                    msg.itemOfTotal(counter++, total)
+                );
+            }
+        );
+    })(totalItems);
+
     const searchAndDownload = (url) => {
         let searchDone = null;
+
+        count();
 
         if (!url) {
             searchDone = Promise.reject(msg.invalidUrl);
@@ -262,7 +299,7 @@ if (program.file) {
             searchDone = searchVideoInfo(url);
         }
         else {
-            searchDone = Promise.resolve();
+            searchDone = Promise.resolve({url});
         }
 
         searchDone
@@ -289,7 +326,12 @@ if (program.file) {
         }
     };
 
-    searchAndDownload(contentList.shift());
+    if (totalItems) {
+        searchAndDownload(contentList.shift());
+    }
+    else {
+        done();
+    }
 }
 
 if (!commandFound) {
