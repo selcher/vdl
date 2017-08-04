@@ -23,6 +23,11 @@ const msg = {
     about: [
         chalk.dim(` VDL - ${version}`)
     ].join(' '),
+    invalidUrl: (url) => [
+            chalk.red(' !'),
+            chalk.yellow('Please provide a valid url:'),
+            chalk.dim(url)
+        ].join(' '),
     getInfo: (url) => [
             chalk.blue(' +'),
             chalk.white('Getting info:'),
@@ -71,7 +76,7 @@ const msg = {
         ].join(' '),
     done: [
             chalk.green(' ✔'),
-            chalk.dim('Done')
+            chalk.dim('Done\n')
         ].join(' ')
 };
 
@@ -104,14 +109,32 @@ const done = () => {
  * Download video functions
  */
 
+const isValidUrl = (url) => (
+    url && url.toLowerCase().startsWith('http')
+);
+
+const validateUrl = url => {
+    return new Promise(
+        (resolve, reject) => {
+            if (isValidUrl(url)) {
+                resolve(
+                    url.split('&')[0]
+                );
+            }
+            else {
+                reject(msg.invalidUrl);
+            }
+        }
+    );
+};
+
 const getVideoInfo = (url) => {
     log(msg.getInfo(url));
 
     return new Promise((resolve, reject) => {
         ytdl.getInfo(url, (err, info) => {
             if (err) {
-                log(msg.errGetInfo(url));
-                reject(err);
+                reject(msg.errGetInfo(url));
             }
             else {
                 resolve(info);
@@ -123,13 +146,12 @@ const getVideoInfo = (url) => {
 const searchVideoInfo = (keyword) => {
     log(msg.searchInfo(keyword));
 
-    const url = 'gvsearch1:' + keyword;
+    const url = `gvsearch1:${keyword}`;
 
     return new Promise((resolve, reject) => {
         youtubedl.getInfo(url, (err, info) => {
             if (err) {
-                log(msg.errSearchInfo(keyword));
-                reject(err);
+                reject(msg.errSearchInfo(keyword));
             }
             else {
                 resolve({
@@ -181,8 +203,7 @@ const downloadFromVideoInfo = (videoInfo) => {
             if (downloaded === total) {
                 readline.cursorTo(process.stdout, 0, null);
                 readline.clearLine(process.stdout, 0);
-                log(msg.downloaded(title));
-                resolve();
+                resolve(msg.downloaded(title));
             }
         });
     });
@@ -208,10 +229,16 @@ const onCommandFound = () => {
 if (program.url) {
     onCommandFound();
 
-    getVideoInfo(program.url)
+    validateUrl(program.url)
+        .then(url => getVideoInfo(url))
         .then(info => formatVideoInfo(info))
         .then(videoInfo => downloadFromVideoInfo(videoInfo))
-        .then(() => done());
+        .then(videoDownloadedMsg => log(videoDownloadedMsg))
+        .then(() => done())
+        .catch((err) => {
+            log(err);
+            done();
+        });
 }
 
 if (program.file) {
@@ -226,9 +253,12 @@ if (program.file) {
     const searchAndDownload = (url) => {
         let searchDone = null;
 
-        // If the suffix doesn't start with 'http',
-        // assume it's a search.
-        if (url && !url.toLowerCase().startsWith('http')) {
+        if (!url) {
+            searchDone = Promise.reject(msg.invalidUrl);
+        }
+        else if (!isValidUrl(url)) {
+            // If the suffix doesn't start with 'http',
+            // assume it's a search.
             searchDone = searchVideoInfo(url);
         }
         else {
@@ -239,12 +269,17 @@ if (program.file) {
             .then(searchResult => getVideoInfo(searchResult.url))
             .then(info => formatVideoInfo(info))
             .then(videoInfo => downloadFromVideoInfo(videoInfo))
+            .then(videoDownloadedMsg => log(videoDownloadedMsg))
             .then(downloadNextInFile)
             .catch(downloadNextInFile);
     };
 
-    const downloadNextInFile = () => {
+    const downloadNextInFile = (err) => {
         const nextUrl = contentList.shift();
+
+        if (err) {
+            log(err);
+        }
 
         if (nextUrl) {
             searchAndDownload(nextUrl);
