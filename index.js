@@ -189,7 +189,7 @@ const formatVideoInfo = (info) => {
     const strippedTitle = stripCharacters(info.title);
 
     return new Promise((resolve, reject) => {
-        translate(strippedTitle, {to: 'en'}).then(
+        translate(strippedTitle, {to: lang}).then(
             translatedTitle => resolve({
                 info,
                 title: stripCharacters(translatedTitle)
@@ -232,8 +232,9 @@ const downloadFromVideoInfo = (videoInfo) => {
 
 program
     .version(version)
-    .option('-u, --url [urlpath]', 'Add url')
-    .option('-f, --file [filepath]', 'Add file')
+    .option('-u, --url [urlpath]', 'Specify video url')
+    .option('-f, --file [filepath]', 'Specify file location')
+    .option('-l, --lang [name]', 'Set language')
     .parse(process.argv);
 
 let commandFound = false;
@@ -242,6 +243,8 @@ const onCommandFound = () => {
     commandFound = true;
     log(msg.about);
 };
+
+let lang = program.lang || 'en';
 
 if (program.url) {
     onCommandFound();

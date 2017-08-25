@@ -13,6 +13,10 @@ vdl --url 'link'
 // Download from file
 // The file contains links or keywords
 vdl --file 'playListFile.txt'
+
+// Translate video title to a language
+// Default language is 'en'
+vdl --lang 'en' --url 'link'
 ```
 
 ### Installing
