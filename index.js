@@ -48,6 +48,12 @@ const msg = {
             chalk.yellow('Error searching video info:'),
             chalk.dim(keyword)
         ].join(' '),
+    errTranslateTitle: [
+        chalk.red(' !'),
+        chalk.yellow('Error translating video title'),
+        chalk.red('\n !'),
+        chalk.yellow('Using original title')
+    ].join(' '),
     downloading: (title) => [
             chalk.blue(' +'),
             chalk.white('Downloading:'),
@@ -189,7 +195,10 @@ const formatVideoInfo = (info) => {
                 title: stripCharacters(translatedTitle)
             })
         ).catch(
-            err => reject(err)
+            err => {
+                log(msg.errTranslateTitle);
+                resolve(strippedTitle);
+            }
         );
     });
 };
