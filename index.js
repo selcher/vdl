@@ -49,11 +49,11 @@ const msg = {
             chalk.dim(keyword)
         ].join(' '),
     errTranslateTitle: [
-        chalk.red(' !'),
-        chalk.yellow('Error translating video title'),
-        chalk.red('\n !'),
-        chalk.yellow('Using original title')
-    ].join(' '),
+            chalk.red(' !'),
+            chalk.yellow('Error translating video title'),
+            chalk.red('\n !'),
+            chalk.yellow('Using original title')
+        ].join(' '),
     downloading: (title) => [
             chalk.blue(' +'),
             chalk.white('Downloading:'),
