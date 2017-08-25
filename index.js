@@ -59,6 +59,14 @@ const msg = {
             chalk.white('Downloading:'),
             chalk.dim(`${title}.${extension}`)
         ].join(' '),
+    errDownloading: [
+            chalk.red(' !'),
+            chalk.yellow('Oh no, something went wrong.'),
+            chalk.red('\n !'),
+            chalk.yellow('But there is nothing to worry.'),
+            chalk.red('\n !'),
+            chalk.yellow('Just try again.')
+        ].join(' '),
     downloaded: (title) => [
             chalk.green(' ✔'),
             chalk.white('Saved:'),
@@ -256,7 +264,7 @@ if (program.url) {
         .then(videoDownloadedMsg => log(videoDownloadedMsg))
         .then(() => done())
         .catch((err) => {
-            log(err);
+            log(msg.errDownloading);
             done();
         });
 }
