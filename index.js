@@ -190,7 +190,8 @@ const formatVideoInfo = (info) => {
         let updatedStr = str;
 
         updatedStr = updatedStr.replace(/[\s|:?\.\\\/]/g, '-');
-        updatedStr = updatedStr.replace(/[\"]/g, '');
+        updatedStr = updatedStr.replace(/-+/g, '-');
+        updatedStr = updatedStr.replace(/[\"\*]/g, '');
 
         return updatedStr;
     };
