@@ -15,7 +15,7 @@ vdl --url 'link'
 vdl --file 'playListFile.txt'
 
 // Translate video title to a language
-// Default language is 'en'
+// English language is 'en'
 vdl --lang 'en' --url 'link'
 ```
 

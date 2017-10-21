@@ -196,20 +196,30 @@ const formatVideoInfo = (info) => {
         return updatedStr;
     };
     const strippedTitle = stripCharacters(info.title);
+    let response = null;
 
-    return new Promise((resolve, reject) => {
-        translate(strippedTitle, {to: lang}).then(
-            translatedTitle => resolve({
-                info,
-                title: stripCharacters(translatedTitle)
-            })
-        ).catch(
-            err => {
-                log(msg.errTranslateTitle);
-                resolve(strippedTitle);
-            }
-        );
-    });
+    if (lang) {
+        response = new Promise((resolve, reject) => {
+            translate(strippedTitle, {to: lang}).then(
+                translatedTitle => resolve({
+                    info,
+                    title: stripCharacters(translatedTitle)
+                })
+            ).catch(
+                err => {
+                    log(msg.errTranslateTitle);
+                    resolve(strippedTitle);
+                }
+            );
+        });
+    } else {
+        response = Promise.resolve({
+            info,
+            title: strippedTitle
+        });
+    }
+
+    return response;
 };
 
 const downloadFromVideoInfo = (videoInfo) => {
@@ -253,7 +263,7 @@ const onCommandFound = () => {
     log(msg.about);
 };
 
-let lang = program.lang || 'en';
+let lang = program.lang || '';
 
 if (program.url) {
     onCommandFound();
