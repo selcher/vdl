@@ -23,6 +23,10 @@ const msg = {
     about: [
         chalk.dim(` VDL - ${version}`)
     ].join(' '),
+    ytdlError: [
+        chalk.red(' !'),
+        chalk.yellow('Youtube-dl module error')
+    ].join(' '),
     invalidUrl: (url) => [
             chalk.red(' !'),
             chalk.yellow('Please provide a valid url:'),
@@ -171,17 +175,21 @@ const searchVideoInfo = (keyword) => {
     const url = `gvsearch1:${keyword}`;
 
     return new Promise((resolve, reject) => {
-        youtubedl.getInfo(url, (err, info) => {
-            if (err) {
-                reject(msg.errSearchInfo(keyword));
-            }
-            else {
-                resolve({
-                    title: info.title,
-                    url: `https://www.youtube.com/watch?v=${info.id}`
-                });
-            }
-        });
+        try {
+            youtubedl.getInfo(url, (err, info) => {
+                if (err) {
+                    reject(msg.errSearchInfo(keyword));
+                }
+                else {
+                    resolve({
+                        title: info.title,
+                        url: `https://www.youtube.com/watch?v=${info.id}`
+                    });
+                }
+            });
+        } catch (exception) {
+            reject(msg.ytdlError);
+        }
     });
 };
 
