@@ -132,9 +132,16 @@ const writeLine = (txt) => {
     process.stdout.pause();
 };
 
+const clearLine = () => {
+    readline.cursorTo(process.stdout, 0, null);
+    readline.clearLine(process.stdout, 0);
+};
+
+const close = () => rl.close();
+
 const done = () => {
     log(msg.done);
-    rl.close();
+    close();
 };
 
 /**
@@ -164,14 +171,18 @@ const getVideoInfo = (url) => {
     log(msg.getInfo(url));
 
     return new Promise((resolve, reject) => {
-        ytdl.getInfo(url, (err, info) => {
-            if (err) {
-                reject(msg.errGetInfo(url));
-            }
-            else {
-                resolve(info);
-            }
-        });
+        try {
+            ytdl.getInfo(url, (err, info) => {
+                if (err) {
+                    reject(msg.errGetInfo(url));
+                }
+                else {
+                    resolve(info);
+                }
+            });
+        } catch (exception) {
+            reject(msg.errGetInfo(url));
+        }
     });
 };
 
@@ -251,8 +262,7 @@ const downloadFromVideoInfo = (videoInfo) => {
             writeLine(msg.progress(downloaded, total));
 
             if (downloaded === total) {
-                readline.cursorTo(process.stdout, 0, null);
-                readline.clearLine(process.stdout, 0);
+                clearLine();
                 resolve(msg.downloaded(title));
             }
         });
@@ -287,11 +297,8 @@ if (program.url) {
         .then(info => formatVideoInfo(info))
         .then(videoInfo => downloadFromVideoInfo(videoInfo))
         .then(videoDownloadedMsg => log(videoDownloadedMsg))
-        .then(() => done())
-        .catch((err) => {
-            log(msg.errDownloading);
-            done();
-        });
+        .catch((err) => log(msg.errDownloading))
+        .then(done);
 }
 
 if (program.file) {
@@ -382,5 +389,5 @@ if (program.file) {
 if (!commandFound) {
     log(msg.about);
     log(msg.commandNotFound);
-    rl.close();
+    close();
 }
