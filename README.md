@@ -31,6 +31,7 @@ npm install -g vdl
 * [node-ytdl-core](https://github.com/fent/node-ytdl-core)
 * [youtube-dl](https://github.com/przemyslawpluta/node-youtube-dl)
 * [chalk](https://github.com/chalk/chalk)
+* [log-symbols](https://github.com/sindresorhus/log-symbols)
 * [translate-google](https://github.com/shikar/NODE_GOOGLE_TRANSLATE)
 
 ## Contributing

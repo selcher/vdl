@@ -6,6 +6,7 @@ const fs = require('fs');
 const readline = require('readline');
 const program = require('commander');
 const chalk = require('chalk');
+const logSymbols = require('log-symbols');
 const ytdl = require('ytdl-core');
 const youtubedl = require('youtube-dl');
 const translate = require('translate-google');
@@ -21,70 +22,74 @@ const log = console.log;
 const extension = 'mp4';
 const msg = {
     about: [
-        chalk.dim(` VDL - ${version}`)
+        chalk.white(` VDL`),
+        chalk.gray(`- ${version}`)
     ].join(' '),
     ytdlError: [
-        chalk.red(' !'),
+        ` ${logSymbols.error}`,
         chalk.yellow('Youtube-dl module error')
     ].join(' '),
     invalidUrl: (url) => [
-            chalk.red(' !'),
+            ` ${logSymbols.warning}`,
             chalk.yellow('Please provide a valid url:'),
-            chalk.dim(url)
+            chalk.gray(url)
         ].join(' '),
     getInfo: (url) => [
             chalk.blue(' +'),
             chalk.white('Getting info:'),
-            chalk.dim(url)
+            chalk.gray(url)
         ].join(' '),
     errGetInfo: (url) => [
-            chalk.red(' ✖'),
+            ` ${logSymbols.error}`,
             chalk.yellow('Error getting video info:'),
-            chalk.dim(url)
+            chalk.gray(url)
         ].join(' '),
     searchInfo: (keyword) => [
             chalk.blue(' +'),
             chalk.white('Searching video info:'),
-            chalk.dim(keyword)
+            chalk.gray(keyword)
         ].join(' '),
     errSearchInfo: (keyword) => [
-            chalk.red(' ✖'),
+            ` ${logSymbols.error}`,
             chalk.yellow('Error searching video info:'),
-            chalk.dim(keyword)
+            chalk.gray(keyword)
         ].join(' '),
     errTranslateTitle: [
-            chalk.red(' !'),
+            ` ${logSymbols.warning}`,
             chalk.yellow('Error translating video title'),
-            chalk.red('\n !'),
+            '\n',
+            logSymbols.warning,
             chalk.yellow('Using original title')
         ].join(' '),
     downloading: (title) => [
             chalk.blue(' +'),
             chalk.white('Downloading:'),
-            chalk.dim(`${title}.${extension}`)
+            chalk.gray(`${title}.${extension}`)
         ].join(' '),
     errDownloading: [
-            chalk.red(' !'),
+            ` ${logSymbols.warning}`,
             chalk.yellow('Oh no, something went wrong.'),
-            chalk.red('\n !'),
+            '\n',
+            logSymbols.warning,
             chalk.yellow('But there is nothing to worry.'),
-            chalk.red('\n !'),
+            '\n',
+            logSymbols.warning,
             chalk.yellow('Just try again.')
         ].join(' '),
     downloaded: (title) => [
-            chalk.green(' ✔'),
+            ` ${logSymbols.success}`,
             chalk.white('Saved:'),
-            chalk.dim(`${title}.${extension}`)
+            chalk.gray(`${title}.${extension}`)
         ].join(' '),
     progress: (downloaded, total) => [
             chalk.blue(' +'),
-            chalk.dim('Progress:'),
+            chalk.white('Progress:'),
             chalk.yellow(`[ ${downloaded} / ${total} ]`)
         ].join(' '),
     readFile: (filePath) => [
             chalk.blue(' +'),
             chalk.white('Reading file:'),
-            chalk.dim(filePath)
+            chalk.gray(filePath)
         ].join(' '),
     itemsFound: (total) => [
             chalk.blue(' +'),
@@ -95,14 +100,15 @@ const msg = {
             chalk.white(`[ ${current} / ${total} ]`)
         ].join(' '),
     commandNotFound: [
-            chalk.red(' !'),
+            ` ${logSymbols.warning}`,
             chalk.yellow('Command Not Found'),
-            chalk.red('\n !'),
+            '\n',
+            logSymbols.warning,
             chalk.yellow('Use "vdl -h" for help')
         ].join(' '),
     done: [
-            chalk.green(' ✔'),
-            chalk.dim('Done\n')
+            ` ${logSymbols.success}`,
+            chalk.white('Done\n')
         ].join(' ')
 };
 
