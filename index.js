@@ -11,6 +11,7 @@ const ytdl = require('ytdl-core');
 const youtubedl = require('youtube-dl');
 const translate = require('translate-google');
 
+const name = package.name;
 const version = package.version;
 const currentDir = process.cwd();
 const log = console.log;
@@ -22,13 +23,20 @@ const log = console.log;
 const extension = 'mp4';
 const msg = {
     about: [
-        chalk.white(` VDL`),
-        chalk.gray(`- ${version}`)
-    ].join(' '),
+            chalk.white(` ${name.toUpperCase()}`),
+            chalk.gray(`- ${version}`)
+        ].join(' '),
+    usage: chalk.white('[options]'),
+    examples: [
+            '\n',
+            chalk.white('Example:'),
+            chalk.white(`\n  $ ${name} -h`),
+            chalk.white(`\n  $ ${name} -u 'link'`)
+        ].join(' '),
     ytdlError: [
-        ` ${logSymbols.error}`,
-        chalk.yellow('Youtube-dl module error')
-    ].join(' '),
+            ` ${logSymbols.error}`,
+            chalk.yellow('Youtube-dl module error')
+        ].join(' '),
     invalidUrl: (url) => [
             ` ${logSymbols.warning}`,
             chalk.yellow('Please provide a valid url:'),
@@ -104,7 +112,7 @@ const msg = {
             chalk.yellow('Command Not Found'),
             '\n',
             logSymbols.warning,
-            chalk.yellow('Use "vdl -h" for help')
+            chalk.yellow(`Use "${name} -h" for help`)
         ].join(' '),
     done: [
             ` ${logSymbols.success}`,
@@ -274,10 +282,15 @@ const downloadFromVideoInfo = (videoInfo) => {
  */
 
 program
-    .version(version)
+    .name(name)
+    .version(version, '-v, --version')
+    .usage(msg.usage)
     .option('-u, --url [urlpath]', 'Specify video url')
     .option('-f, --file [filepath]', 'Specify file location')
     .option('-l, --lang [name]', 'Set language')
+    .on('--help', function () {
+        log(msg.examples);
+    })
     .parse(process.argv);
 
 let commandFound = false;
