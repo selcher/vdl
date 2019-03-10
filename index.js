@@ -79,10 +79,13 @@ const msg = {
             chalk.yellow('Oh no, something went wrong.'),
             '\n',
             logSymbols.warning,
-            chalk.yellow('But there is nothing to worry.'),
+            chalk.yellow('Use -e to view the error and try again.')
+        ].join(' '),
+    downloadFailed: (err) => [
+            ` ${logSymbols.warning}`,
+            chalk.yellow('Failed to download the video:'),
             '\n',
-            logSymbols.warning,
-            chalk.yellow('Just try again.')
+            chalk.gray(err)
         ].join(' '),
     downloaded: (title) => [
             ` ${logSymbols.success}`,
@@ -257,23 +260,22 @@ const formatVideoInfo = (info) => {
 
 const downloadFromVideoInfo = (videoInfo) => {
     const title = videoInfo.title;
-    let dlStream = ytdl.downloadFromInfo(videoInfo.info);
 
     log(msg.downloading(title));
 
-    dlStream.pipe(
-        fs.createWriteStream(`${currentDir}/${title}.${extension}`)
-    );
-
     return new Promise((resolve, reject) => {
-        dlStream.on('progress', (chunk, downloaded, total) => {
-            writeLine(msg.progress(downloaded, total));
+        ytdl.downloadFromInfo(videoInfo.info)
+            .on('error', (err) => reject(err))
+            .on('progress', (chunk, downloaded, total) => {
+                writeLine(msg.progress(downloaded, total));
 
-            if (downloaded === total) {
-                clearLine();
-                resolve(msg.downloaded(title));
-            }
-        });
+                if (downloaded === total) {
+                    clearLine();
+                    resolve(msg.downloaded(title));
+                }
+            }).pipe(
+                fs.createWriteStream(`${currentDir}/${title}.${extension}`)
+            );
     });
 };
 
@@ -288,6 +290,7 @@ program
     .option('-u, --url [urlpath]', 'Specify video url')
     .option('-f, --file [filepath]', 'Specify file location')
     .option('-l, --lang [name]', 'Set language')
+    .option('-e, --error', 'Display error details')
     .on('--help', function () {
         log(msg.examples);
     })
@@ -310,8 +313,10 @@ if (program.url) {
         .then(info => formatVideoInfo(info))
         .then(videoInfo => downloadFromVideoInfo(videoInfo))
         .then(videoDownloadedMsg => log(videoDownloadedMsg))
-        .catch((err) => log(msg.errDownloading))
-        .then(done);
+        .catch((err) => program.error ?
+            log(msg.downloadFailed(err)) :
+            log(msg.errDownloading)
+        ).then(done);
 }
 
 if (program.file) {
