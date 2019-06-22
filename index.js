@@ -5,8 +5,6 @@ const process = require('process');
 const fs = require('fs');
 const readline = require('readline');
 const program = require('commander');
-const chalk = require('chalk');
-const logSymbols = require('log-symbols');
 const ytdl = require('ytdl-core');
 const youtubedl = require('youtube-dl');
 const translate = require('translate-google');
@@ -20,113 +18,7 @@ const fileExtension = 'mp4';
 const buildFileName = (title) => `${title}.${fileExtension}`;
 const buildFilePath = (title) => `${currentDir}/${buildFileName(title)}`;
 
-/**
- * Messages
- */
-
-const msg = {
-    about: [
-            chalk.white(` ${name.toUpperCase()}`),
-            chalk.gray(`- ${version}`)
-        ].join(' '),
-    usage: chalk.white('[options]'),
-    examples: [
-            '\n',
-            chalk.white('Example:'),
-            chalk.white(`\n  $ ${name} -h`),
-            chalk.white(`\n  $ ${name} -u 'link'`)
-        ].join(' '),
-    ytdlError: [
-            ` ${logSymbols.error}`,
-            chalk.yellow('Youtube-dl module error')
-        ].join(' '),
-    invalidUrl: (url) => [
-            ` ${logSymbols.warning}`,
-            chalk.yellow('Please provide a valid url:'),
-            chalk.gray(url)
-        ].join(' '),
-    getInfo: (url) => [
-            chalk.blue(' +'),
-            chalk.white('Getting info:'),
-            chalk.gray(url)
-        ].join(' '),
-    errGetInfo: (url) => [
-            ` ${logSymbols.error}`,
-            chalk.yellow('Error getting video info:'),
-            chalk.gray(url)
-        ].join(' '),
-    searchInfo: (keyword) => [
-            chalk.blue(' +'),
-            chalk.white('Searching video info:'),
-            chalk.gray(keyword)
-        ].join(' '),
-    errSearchInfo: (keyword) => [
-            ` ${logSymbols.error}`,
-            chalk.yellow('Error searching video info:'),
-            chalk.gray(keyword)
-        ].join(' '),
-    errTranslateTitle: [
-            ` ${logSymbols.warning}`,
-            chalk.yellow('Error translating video title'),
-            '\n',
-            logSymbols.warning,
-            chalk.yellow('Using original title')
-        ].join(' '),
-    downloading: (title) => [
-            chalk.blue(' +'),
-            chalk.white('Downloading:'),
-            chalk.gray(buildFileName(title))
-        ].join(' '),
-    errDownloading: [
-            ` ${logSymbols.warning}`,
-            chalk.yellow('Oh no, something went wrong.'),
-            '\n',
-            logSymbols.warning,
-            chalk.yellow('Use -e to view the error and try again.')
-        ].join(' '),
-    downloadFailed: (err) => [
-            ` ${logSymbols.warning}`,
-            chalk.yellow('Failed to download the video:'),
-            '\n',
-            chalk.gray(err)
-        ].join(' '),
-    downloaded: (title) => [
-            ` ${logSymbols.success}`,
-            chalk.white('Saved:'),
-            chalk.gray(buildFileName(title))
-        ].join(' '),
-    progress: (downloaded, total) => [
-            chalk.blue(' +'),
-            chalk.white('Progress:'),
-            chalk.yellow(`[ ${downloaded} / ${total} ]`)
-        ].join(' '),
-    readFile: (filePath) => [
-            chalk.blue(' +'),
-            chalk.white('Reading file:'),
-            chalk.gray(filePath)
-        ].join(' '),
-    itemsFound: (total) => [
-            chalk.blue(' +'),
-            chalk.white(`ITEMS:`),
-            chalk.yellow(`${total}`)
-        ].join(' '),
-    itemOfTotal: (current, total) => [
-            chalk.blue(' +'),
-            chalk.white('ITEM:'),
-            chalk.yellow(`[ ${current} / ${total} ]`)
-        ].join(' '),
-    commandNotFound: [
-            ` ${logSymbols.warning}`,
-            chalk.yellow('Command Not Found'),
-            '\n',
-            logSymbols.warning,
-            chalk.yellow(`Use "${name} -h" for help`)
-        ].join(' '),
-    done: [
-            ` ${logSymbols.success}`,
-            chalk.white('Done\n')
-        ].join(' ')
-};
+const msg = require('./src/messages');
 
 /**
  * Terminal output functions
@@ -261,8 +153,9 @@ const formatVideoInfo = async (info, langSetting) => {
 
 const downloadFromVideoInfo = (videoInfo) => {
     const title = videoInfo.title;
+    const fileName = buildFileName(title);
 
-    log(msg.downloading(title));
+    log(msg.downloading(fileName));
 
     return new Promise((resolve, reject) => {
         ytdl.downloadFromInfo(videoInfo.info)
@@ -272,7 +165,7 @@ const downloadFromVideoInfo = (videoInfo) => {
 
                 if (downloaded === total) {
                     clearLine();
-                    resolve(msg.downloaded(title));
+                    resolve(msg.downloaded(fileName));
                 }
             }).pipe(
                 fs.createWriteStream(buildFilePath(title))
@@ -293,7 +186,7 @@ program
     .option('-l, --lang [name]', 'Set language')
     .option('-e, --error', 'Display error details')
     .on('--help', () => {
-        log(msg.examples);
+        log(msg.examples(name));
     })
     .parse(process.argv);
 
@@ -301,7 +194,7 @@ let commandFound = false;
 
 const onCommandFound = () => {
     commandFound = true;
-    log(msg.about);
+    log(msg.about(name));
 };
 
 let lang = program.lang || '';
@@ -411,7 +304,7 @@ if (program.file) {
 }
 
 if (!commandFound) {
-    log(msg.about);
-    log(msg.commandNotFound);
+    log(msg.about(name));
+    log(msg.commandNotFound(name));
     close();
 }
