@@ -226,7 +226,7 @@ const searchVideoInfo = (keyword) => {
     });
 };
 
-const formatVideoInfo = (info) => {
+const formatVideoInfo = (info, langSetting) => {
     const stripCharacters = (str) => {
         let updatedStr = str;
 
@@ -239,9 +239,9 @@ const formatVideoInfo = (info) => {
     const strippedTitle = stripCharacters(info.title);
     let response = null;
 
-    if (lang) {
+    if (langSetting) {
         response = new Promise((resolve, reject) => {
-            translate(strippedTitle, {to: lang}).then(
+            translate(strippedTitle, {to: langSetting}).then(
                 translatedTitle => resolve({
                     info,
                     title: stripCharacters(translatedTitle)
@@ -315,7 +315,7 @@ if (program.url) {
 
     validateUrl(program.url)
         .then(url => getVideoInfo(url))
-        .then(info => formatVideoInfo(info))
+        .then(info => formatVideoInfo(info, lang))
         .then(videoInfo => downloadFromVideoInfo(videoInfo))
         .then(videoDownloadedMsg => log(videoDownloadedMsg))
         .catch((err) => program.error ?
@@ -379,7 +379,7 @@ if (program.file) {
 
         searchDone
             .then(searchResult => getVideoInfo(searchResult.url))
-            .then(info => formatVideoInfo(info))
+            .then(info => formatVideoInfo(info, lang))
             .then(videoInfo => downloadFromVideoInfo(videoInfo))
             .then(videoDownloadedMsg => log(videoDownloadedMsg))
             .then(downloadNextInFile)
