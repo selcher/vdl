@@ -168,38 +168,27 @@ const isValidUrl = (url) => (
     url && url.toLowerCase().startsWith('http')
 );
 
-const validateUrl = url => {
-    return new Promise(
-        (resolve, reject) => {
-            if (isValidUrl(url)) {
-                resolve(
-                    url.split('&')[0]
-                );
-            }
-            else {
-                reject(msg.invalidUrl);
-            }
-        }
-    );
+const validateUrl = async (url) => {
+    if (!isValidUrl(url)) {
+        throw (msg.invalidUrl);
+    }
+
+    return (url.split('&')[0]);
 };
 
-const getVideoInfo = (url) => {
+const getVideoInfo = async (url) => {
     log(msg.getInfo(url));
 
-    return new Promise((resolve, reject) => {
-        try {
-            ytdl.getInfo(url, (err, info) => {
-                if (err) {
-                    reject(msg.errGetInfo(url));
-                }
-                else {
-                    resolve(info);
-                }
-            });
-        } catch (exception) {
-            reject(msg.errGetInfo(url));
-        }
-    });
+    let info = null;
+
+    try {
+        info = await ytdl.getInfo(url);
+    }
+    catch (exception) {
+        throw (msg.errGetInfo(url));
+    }
+
+    return info;
 };
 
 const buildVideoUrl = (id) => (
@@ -230,41 +219,44 @@ const searchVideoInfo = (keyword) => {
     });
 };
 
-const formatVideoInfo = (info, langSetting) => {
-    const stripCharacters = (str) => {
-        let updatedStr = str;
+const stripCharacters = (str) => {
+    let updatedStr = str;
 
-        updatedStr = updatedStr.replace(/[\s|:?\.\\\/]/g, '-');
-        updatedStr = updatedStr.replace(/-+/g, '-');
-        updatedStr = updatedStr.replace(/[\"\*]/g, '');
+    updatedStr = updatedStr.replace(/[\s|:?\.\\\/]/g, '-');
+    updatedStr = updatedStr.replace(/-+/g, '-');
+    updatedStr = updatedStr.replace(/[\"\*]/g, '');
 
-        return updatedStr;
-    };
+    return updatedStr;
+};
+
+const formatVideoInfo = async (info, langSetting) => {
     const strippedTitle = stripCharacters(info.title);
-    let response = null;
 
-    if (langSetting) {
-        response = new Promise((resolve, reject) => {
-            translate(strippedTitle, {to: langSetting}).then(
-                translatedTitle => resolve({
-                    info,
-                    title: stripCharacters(translatedTitle)
-                })
-            ).catch(
-                err => {
-                    log(msg.errTranslateTitle);
-                    resolve(strippedTitle);
-                }
-            );
-        });
-    } else {
-        response = Promise.resolve({
+    if (!langSetting) {
+        return {
             info,
             title: strippedTitle
-        });
+        };
     }
 
-    return response;
+    try {
+        const translatedTitle = await translate(
+            strippedTitle,
+            {to: langSetting}
+        );
+
+        return {
+            info,
+            title: stripCharacters(translatedTitle)
+        };
+    } catch (exception) {
+        log(msg.errTranslateTitle);
+
+        return {
+            info,
+            title: strippedTitle
+        };
+    }
 };
 
 const downloadFromVideoInfo = (videoInfo) => {
