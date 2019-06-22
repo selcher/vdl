@@ -202,6 +202,10 @@ const getVideoInfo = (url) => {
     });
 };
 
+const buildVideoUrl = (id) => (
+    `https://www.youtube.com/watch?v=${id}`
+);
+
 const searchVideoInfo = (keyword) => {
     log(msg.searchInfo(keyword));
 
@@ -216,7 +220,7 @@ const searchVideoInfo = (keyword) => {
                 else {
                     resolve({
                         title: info.title,
-                        url: `https://www.youtube.com/watch?v=${info.id}`
+                        url: buildVideoUrl(info.id)
                     });
                 }
             });
