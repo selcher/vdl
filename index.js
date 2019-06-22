@@ -13,14 +13,17 @@ const translate = require('translate-google');
 
 const name = package.name;
 const version = package.version;
-const currentDir = process.cwd();
 const log = console.log;
+
+const currentDir = process.cwd();
+const fileExtension = 'mp4';
+const buildFileName = (title) => `${title}.${fileExtension}`;
+const buildFilePath = (title) => `${currentDir}/${buildFileName(title)}`;
 
 /**
  * Messages
  */
 
-const extension = 'mp4';
 const msg = {
     about: [
             chalk.white(` ${name.toUpperCase()}`),
@@ -72,7 +75,7 @@ const msg = {
     downloading: (title) => [
             chalk.blue(' +'),
             chalk.white('Downloading:'),
-            chalk.gray(`${title}.${extension}`)
+            chalk.gray(buildFileName(title))
         ].join(' '),
     errDownloading: [
             ` ${logSymbols.warning}`,
@@ -90,7 +93,7 @@ const msg = {
     downloaded: (title) => [
             ` ${logSymbols.success}`,
             chalk.white('Saved:'),
-            chalk.gray(`${title}.${extension}`)
+            chalk.gray(buildFileName(title))
         ].join(' '),
     progress: (downloaded, total) => [
             chalk.blue(' +'),
@@ -274,7 +277,7 @@ const downloadFromVideoInfo = (videoInfo) => {
                     resolve(msg.downloaded(title));
                 }
             }).pipe(
-                fs.createWriteStream(`${currentDir}/${title}.${extension}`)
+                fs.createWriteStream(buildFilePath(title))
             );
     });
 };
