@@ -292,7 +292,7 @@ program
     .option('-f, --file [filepath]', 'Specify file location')
     .option('-l, --lang [name]', 'Set language')
     .option('-e, --error', 'Display error details')
-    .on('--help', function () {
+    .on('--help', () => {
         log(msg.examples);
     })
     .parse(process.argv);
@@ -314,10 +314,15 @@ if (program.url) {
         .then(info => formatVideoInfo(info, lang))
         .then(videoInfo => downloadFromVideoInfo(videoInfo))
         .then(videoDownloadedMsg => log(videoDownloadedMsg))
-        .catch((err) => program.error ?
-            log(msg.downloadFailed(err)) :
-            log(msg.errDownloading)
-        ).then(done);
+        .catch((err) => {
+            if (program.error) {
+                log(msg.downloadFailed(err));
+            }
+            else {
+                log(msg.errDownloading);
+            }
+        })
+        .finally(done);
 }
 
 if (program.file) {
