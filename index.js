@@ -107,11 +107,13 @@ const msg = {
         ].join(' '),
     itemsFound: (total) => [
             chalk.blue(' +'),
-            chalk.white(`Found ${total} items`)
+            chalk.white(`ITEMS:`),
+            chalk.yellow(`${total}`)
         ].join(' '),
     itemOfTotal: (current, total) => [
             chalk.blue(' +'),
-            chalk.white(`[ ${current} / ${total} ]`)
+            chalk.white('ITEM:'),
+            chalk.yellow(`[ ${current} / ${total} ]`)
         ].join(' '),
     commandNotFound: [
             ` ${logSymbols.warning}`,
