@@ -5,8 +5,8 @@ const ytdl = require('ytdl-core');
 const youtubedl = require('youtube-dl');
 const translate = require('translate-google');
 
-const log = console.log;
 const msg = require('./messages');
+const info = require('./info');
 
 /**
  * Download video functions
@@ -16,7 +16,7 @@ const isValidUrl = (url) => (
     url && url.toLowerCase().startsWith('http')
 );
 
-const validateUrl = async (url) => {
+const _validateUrl = async (url) => {
     if (!isValidUrl(url)) {
         throw (msg.invalidUrl);
     }
@@ -24,9 +24,7 @@ const validateUrl = async (url) => {
     return (url.split('&')[0]);
 };
 
-const getVideoInfo = async (url) => {
-    log(msg.getInfo(url));
-
+const _getVideoInfo = async (url) => {
     let info = null;
 
     try {
@@ -39,13 +37,11 @@ const getVideoInfo = async (url) => {
     return info;
 };
 
-const buildVideoUrl = (id) => (
+const _buildVideoUrl = (id) => (
     `https://www.youtube.com/watch?v=${id}`
 );
 
-const searchVideoInfo = (keyword) => {
-    log(msg.searchInfo(keyword));
-
+const _searchVideoInfo = (keyword) => {
     const url = `gvsearch1:${keyword}`;
 
     return new Promise((resolve, reject) => {
@@ -57,17 +53,18 @@ const searchVideoInfo = (keyword) => {
                 else {
                     resolve({
                         title: info.title,
-                        url: buildVideoUrl(info.id)
+                        url: _buildVideoUrl(info.id)
                     });
                 }
             });
-        } catch (exception) {
+        }
+        catch (exception) {
             reject(msg.ytdlError);
         }
     });
 };
 
-const stripCharacters = (str) => {
+const _stripCharacters = (str) => {
     let updatedStr = str;
 
     updatedStr = updatedStr.replace(/[\s|:?\.\\\/]/g, '-');
@@ -77,8 +74,8 @@ const stripCharacters = (str) => {
     return updatedStr;
 };
 
-const formatVideoInfo = async (info, langSetting) => {
-    const strippedTitle = stripCharacters(info.title);
+const _formatVideoInfo = async (info, langSetting) => {
+    const strippedTitle = _stripCharacters(info.title);
 
     if (!langSetting) {
         return {
@@ -95,74 +92,72 @@ const formatVideoInfo = async (info, langSetting) => {
 
         return {
             info,
-            title: stripCharacters(translatedTitle)
+            title: _stripCharacters(translatedTitle)
         };
-    } catch (exception) {
-        log(msg.errTranslateTitle);
-
+    }
+    catch (exception) {
         return {
             info,
-            title: strippedTitle
+            title: strippedTitle,
+            error: msg.errTranslateTitle
         };
     }
 };
 
-const currentDir = process.cwd();
-const fileExtension = 'mp4';
-const buildFileName = (title) => `${title}.${fileExtension}`;
-const buildFilePath = (title) => `${currentDir}/${buildFileName(title)}`;
-
-const downloadFromVideoInfo = (videoInfo) => {
-    const title = videoInfo.title;
-    const fileName = buildFileName(title);
-
-    log(msg.downloading(fileName));
-
+const _downloadFromVideoInfo = (videoInfo) => {
     return new Promise((resolve, reject) => {
         ytdl.downloadFromInfo(videoInfo.info)
             .on('error', (err) => reject(err))
             .on('progress', (chunk, downloaded, total) => {
-                progressLogger(downloaded, total);
+                _progressLogger(downloaded, total);
 
                 if (downloaded === total) {
-                    resolve(msg.downloaded(fileName));
+                    resolve(msg.downloaded(info.getFileName(videoInfo)));
                 }
             }).pipe(
-                fs.createWriteStream(buildFilePath(title))
+                fs.createWriteStream(info.getFilePath(videoInfo))
             );
     });
 };
 
-let progressLogger = () => {};
+let _progressLogger = () => {};
 
 const setProgressLogger = (logger) => {
-    progressLogger = logger;
+    _progressLogger = logger;
 };
 
-let lang = '';
+let _lang = '';
 
 const setLanguage = (languageCode) => {
-    lang = languageCode;
+    _lang = languageCode;
 };
 
+const getInfo = (url) => {
+    return _validateUrl(url)
+        .then(validUrl => _getVideoInfo(validUrl))
+        .then(info => _formatVideoInfo(info, _lang));
+};
+
+const searchInfo = _searchVideoInfo;
+const downloadFromInfo = _downloadFromVideoInfo;
+
 const downloadFromUrl = (url) => {
-    return validateUrl(url)
-        .then(validUrl => getVideoInfo(validUrl))
-        .then(info => formatVideoInfo(info, lang))
-        .then(videoInfo => downloadFromVideoInfo(videoInfo));
+    return getInfo(url)
+        .then(videoInfo => downloadFromInfo(videoInfo));
 };
 
 const downloadFromKeyword = (keyword) => {
-    return searchVideoInfo(keyword)
-        .then(searchResult => getVideoInfo(searchResult.url))
-        .then(info => formatVideoInfo(info, lang))
-        .then(videoInfo => downloadFromVideoInfo(videoInfo));
+    return searchInfo(keyword)
+        .then(searchResult => downloadFromUrl(searchResult.url));
 };
 
 module.exports = {
     isValidUrl,
-    setProgressLogger,
     setLanguage,
+    setProgressLogger,
+    getInfo,
+    searchInfo,
+    downloadFromInfo,
     downloadFromUrl,
     downloadFromKeyword
 };

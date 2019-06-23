@@ -2,6 +2,7 @@
 
 const log = console.log;
 const msg = require('./src/messages');
+const info = require('./src/info');
 
 /**
  * Tasks
@@ -39,27 +40,46 @@ tasks.done = () => {
  * Task: Download Video From Url
  */
 const vid = require('./src/video');
-const downloadProgressLog = (downloaded, total) => {
+const downloadProgressLogger = (downloaded, total) => {
     terminal.writeLine(msg.progress(downloaded, total));
 
     if (downloaded === total) {
         terminal.clearLine();
     }
 };
+const downloadErrorHandler = (err) => {
+    if (!err) {
+        return;
+    }
+
+    if (program.error) {
+        log(msg.downloadFailed(err));
+    }
+    else {
+        log(msg.errDownloading);
+    }
+};
+const downloadFromUrl = (url) => {
+    log(msg.getInfo(url));
+
+    return vid.getInfo(url)
+        .then(videoInfo => {
+            if (videoInfo.error) {
+                log(videoInfo.error);
+            }
+
+            log(msg.downloading(info.getFileName(videoInfo)));
+
+            return vid.downloadFromInfo(videoInfo);
+        });
+};
 
 tasks.downloadFromUrl = (url) => {
-    vid.setProgressLogger(downloadProgressLog);
+    vid.setProgressLogger(downloadProgressLogger);
 
-    vid.downloadFromUrl(url)
+    downloadFromUrl(url)
         .then(videoDownloadedMsg => log(videoDownloadedMsg))
-        .catch((err) => {
-            if (program.error) {
-                log(msg.downloadFailed(err));
-            }
-            else {
-                log(msg.errDownloading);
-            }
-        })
+        .catch((err) => downloadErrorHandler(err))
         .finally(tasks.done);
 };
 
@@ -115,10 +135,13 @@ tasks.downloadFromFile = (filePath) => {
         else if (!vid.isValidUrl(url)) {
             // If the suffix doesn't start with 'http',
             // assume it's a search.
-            searchDone = vid.downloadFromKeyword(url);
+            searchDone = (
+                vid.searchInfo(url)
+                    .then(searchResult => downloadFromUrl(searchResult.url))
+            );
         }
         else {
-            searchDone = vid.downloadFromUrl(url);
+            searchDone = downloadFromUrl(url);
         }
 
         searchDone
@@ -128,9 +151,7 @@ tasks.downloadFromFile = (filePath) => {
     };
 
     const downloadNextInFile = (err) => {
-        if (err) {
-            log(err);
-        }
+        downloadErrorHandler(err);
 
         const nextUrl = contentList.shift();
 
@@ -142,7 +163,7 @@ tasks.downloadFromFile = (filePath) => {
         }
     };
 
-    vid.setProgressLogger(downloadProgressLog);
+    vid.setProgressLogger(downloadProgressLogger);
 
     searchAndDownload(contentList.shift());
 };
