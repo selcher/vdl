@@ -3,7 +3,6 @@
 const package = require('./package.json');
 const process = require('process');
 const fs = require('fs');
-const readline = require('readline');
 const program = require('commander');
 const ytdl = require('ytdl-core');
 const youtubedl = require('youtube-dl');
@@ -19,37 +18,11 @@ const buildFileName = (title) => `${title}.${fileExtension}`;
 const buildFilePath = (title) => `${currentDir}/${buildFileName(title)}`;
 
 const msg = require('./src/messages');
-
-/**
- * Terminal output functions
- */
-
-const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout
-});
-
-rl.on('close', () => {
-    process.exit(0);
-});
-
-const writeLine = (txt) => {
-    readline.cursorTo(process.stdout, 0);
-    readline.clearLine(process.stdout, 0);
-    process.stdout.write(txt);
-    process.stdout.pause();
-};
-
-const clearLine = () => {
-    readline.cursorTo(process.stdout, 0, null);
-    readline.clearLine(process.stdout, 0);
-};
-
-const close = () => rl.close();
+const terminal = require('./src/terminal');
 
 const done = () => {
     log(msg.done);
-    close();
+    terminal.close();
 };
 
 /**
@@ -161,10 +134,10 @@ const downloadFromVideoInfo = (videoInfo) => {
         ytdl.downloadFromInfo(videoInfo.info)
             .on('error', (err) => reject(err))
             .on('progress', (chunk, downloaded, total) => {
-                writeLine(msg.progress(downloaded, total));
+                terminal.writeLine(msg.progress(downloaded, total));
 
                 if (downloaded === total) {
-                    clearLine();
+                    terminal.clearLine();
                     resolve(msg.downloaded(fileName));
                 }
             }).pipe(
