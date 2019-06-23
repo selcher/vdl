@@ -198,5 +198,5 @@ if (program.file) {
 if (!commandFound) {
     log(msg.about(name, version));
     log(msg.commandNotFound(name));
-    close();
+    terminal.close();
 }
