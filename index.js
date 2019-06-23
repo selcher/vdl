@@ -38,10 +38,18 @@ tasks.done = () => {
 /**
  * Task: Download Video From Url
  */
-
 const vid = require('./src/video');
+const downloadProgressLog = (downloaded, total) => {
+    terminal.writeLine(msg.progress(downloaded, total));
+
+    if (downloaded === total) {
+        terminal.clearLine();
+    }
+};
 
 tasks.downloadFromUrl = (url) => {
+    vid.setProgressLogger(downloadProgressLog);
+
     vid.downloadFromUrl(url)
         .then(videoDownloadedMsg => log(videoDownloadedMsg))
         .catch((err) => {
@@ -58,7 +66,6 @@ tasks.downloadFromUrl = (url) => {
 /**
  * Task: Download Videos Listed in File
  */
-
 const fs = require('fs');
 const getFileContentAsList = (pathToFile) => {
     const newLineChars = /\r\n/g;
@@ -135,6 +142,8 @@ tasks.downloadFromFile = (filePath) => {
         }
     };
 
+    vid.setProgressLogger(downloadProgressLog);
+
     searchAndDownload(contentList.shift());
 };
 
@@ -146,7 +155,7 @@ let commandFound = false;
 
 const onCommandFound = () => {
     commandFound = true;
-    log(msg.about(name));
+    log(msg.about(name, version));
 };
 
 const program = tasks.init();
@@ -166,7 +175,7 @@ if (program.file) {
 }
 
 if (!commandFound) {
-    log(msg.about(name));
+    log(msg.about(name, version));
     log(msg.commandNotFound(name));
     close();
 }

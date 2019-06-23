@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+const fs = require('fs');
 const ytdl = require('ytdl-core');
 const youtubedl = require('youtube-dl');
 const translate = require('translate-google');
@@ -121,16 +122,21 @@ const downloadFromVideoInfo = (videoInfo) => {
         ytdl.downloadFromInfo(videoInfo.info)
             .on('error', (err) => reject(err))
             .on('progress', (chunk, downloaded, total) => {
-                terminal.writeLine(msg.progress(downloaded, total));
+                progressLogger(downloaded, total);
 
                 if (downloaded === total) {
-                    terminal.clearLine();
                     resolve(msg.downloaded(fileName));
                 }
             }).pipe(
                 fs.createWriteStream(buildFilePath(title))
             );
     });
+};
+
+let progressLogger = () => {};
+
+const setProgressLogger = (logger) => {
+    progressLogger = logger;
 };
 
 let lang = '';
@@ -140,8 +146,8 @@ const setLanguage = (languageCode) => {
 };
 
 const downloadFromUrl = (url) => {
-    return validateUrl(program.url)
-        .then(url => getVideoInfo(url))
+    return validateUrl(url)
+        .then(validUrl => getVideoInfo(validUrl))
         .then(info => formatVideoInfo(info, lang))
         .then(videoInfo => downloadFromVideoInfo(videoInfo));
 };
@@ -155,6 +161,7 @@ const downloadFromKeyword = (keyword) => {
 
 module.exports = {
     isValidUrl,
+    setProgressLogger,
     setLanguage,
     downloadFromUrl,
     downloadFromKeyword

@@ -8,7 +8,7 @@ const logSymbols = require('log-symbols');
  */
 
 const msg = {
-    about: (name) => [
+    about: (name, version) => [
             chalk.white(` ${name.toUpperCase()}`),
             chalk.gray(`- ${version}`)
         ].join(' '),
