@@ -133,6 +133,12 @@ const downloadFromVideoInfo = (videoInfo) => {
     });
 };
 
+let lang = '';
+
+const setLanguage = (languageCode) => {
+    lang = languageCode;
+};
+
 const downloadFromUrl = (url) => {
     return validateUrl(program.url)
         .then(url => getVideoInfo(url))
@@ -149,6 +155,7 @@ const downloadFromKeyword = (keyword) => {
 
 module.exports = {
     isValidUrl,
+    setLanguage,
     downloadFromUrl,
     downloadFromKeyword
 };

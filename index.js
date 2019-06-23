@@ -43,7 +43,9 @@ const onCommandFound = () => {
     log(msg.about(name));
 };
 
-let lang = program.lang || '';
+if (program.lang) {
+    vid.setLanguage(program.lang);
+}
 
 if (program.url) {
     onCommandFound();
