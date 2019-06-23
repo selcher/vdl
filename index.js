@@ -85,7 +85,7 @@ if (program.file) {
 
     log(msg.itemsFound(totalItems));
 
-    const count = ((total) => {
+    const logCurrentItemOfTotalItems = ((total) => {
         let counter = 1;
 
         return (
@@ -98,9 +98,9 @@ if (program.file) {
     })(totalItems);
 
     const searchAndDownload = (url) => {
-        let searchDone = null;
+        logCurrentItemOfTotalItems();
 
-        count();
+        let searchDone = null;
 
         if (!url) {
             searchDone = Promise.reject(msg.invalidUrl);
@@ -121,11 +121,11 @@ if (program.file) {
     };
 
     const downloadNextInFile = (err) => {
-        const nextUrl = contentList.shift();
-
         if (err) {
             log(err);
         }
+
+        const nextUrl = contentList.shift();
 
         if (nextUrl) {
             searchAndDownload(nextUrl);
