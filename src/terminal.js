@@ -5,7 +5,7 @@ const readline = require('readline');
 const program = require('commander');
 
 /**
- * Terminal command definitions
+ * Command Definitions
  */
 
 function init(options) {
@@ -24,7 +24,7 @@ function init(options) {
 }
 
 /**
- * Terminal input output functions
+ * Input Output Functions
  */
 
 const rl = readline.createInterface({
