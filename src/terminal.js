@@ -2,6 +2,26 @@
 
 const process = require('process');
 const readline = require('readline');
+const program = require('commander');
+
+/**
+ * Terminal command definitions
+ */
+
+function init(options) {
+    program
+        .name(options.name)
+        .version(options.version, '-v, --version')
+        .usage(options.usage)
+        .option('-u, --url [urlpath]', 'Specify video url')
+        .option('-f, --file [filepath]', 'Specify file location')
+        .option('-l, --lang [name]', 'Set language')
+        .option('-e, --error', 'Display error details')
+        .on('--help', options.help)
+        .parse(process.argv);
+
+    return program;
+}
 
 /**
  * Terminal input output functions
@@ -31,6 +51,7 @@ const clearLine = () => {
 const close = () => rl.close();
 
 module.exports = {
+    init,
     writeLine,
     clearLine,
     close

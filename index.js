@@ -1,14 +1,21 @@
 #!/usr/bin/env node
 
+const log = console.log;
+const msg = require('./src/messages');
+
+const terminal = require('./src/terminal');
 const package = require('./package.json');
 const name = package.name;
 const version = package.version;
+const program = terminal.init({
+    name,
+    version,
+    usage: msg.usage,
+    help: () => {
+        log(msg.examples(name));
+    }
+});
 
-const process = require('process');
-const terminal = require('./src/terminal');
-
-const log = console.log;
-const msg = require('./src/messages');
 const done = () => {
     log(msg.done);
     terminal.close();
@@ -16,25 +23,6 @@ const done = () => {
 
 const vid = require('./src/video');
 const fs = require('fs');
-
-const program = require('commander');
-
-/**
- * Terminal command definitions
- */
-
-program
-    .name(name)
-    .version(version, '-v, --version')
-    .usage(msg.usage)
-    .option('-u, --url [urlpath]', 'Specify video url')
-    .option('-f, --file [filepath]', 'Specify file location')
-    .option('-l, --lang [name]', 'Set language')
-    .option('-e, --error', 'Display error details')
-    .on('--help', () => {
-        log(msg.examples(name));
-    })
-    .parse(process.argv);
 
 let commandFound = false;
 
