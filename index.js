@@ -130,7 +130,7 @@ tasks.downloadFromFile = (filePath) => {
         let searchDone = null;
 
         if (!url) {
-            searchDone = Promise.reject(msg.invalidUrl);
+            searchDone = Promise.reject(msg.invalidUrl(url));
         }
         else if (!vid.isValidUrl(url)) {
             // If the suffix doesn't start with 'http',

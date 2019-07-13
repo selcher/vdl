@@ -13,12 +13,12 @@ const info = require('./info');
  */
 
 const isValidUrl = (url) => (
-    url && url.toLowerCase().startsWith('http')
+    url && typeof url === 'string' && url.toLowerCase().startsWith('http')
 );
 
 const _validateUrl = async (url) => {
     if (!isValidUrl(url)) {
-        throw (msg.invalidUrl);
+        throw (msg.invalidUrl(url));
     }
 
     return (url.split('&')[0]);
