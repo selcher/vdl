@@ -37,6 +37,10 @@ const _getVideoInfo = async (url) => {
     return info;
 };
 
+const _getVideoTitle = (info) => (
+    info ? info.title : 'vid'
+);
+
 const _buildVideoUrl = (id) => (
     `https://www.youtube.com/watch?v=${id}`
 );
@@ -52,7 +56,7 @@ const _searchVideoInfo = (keyword) => {
                 }
                 else {
                     resolve({
-                        title: info.title,
+                        title: _getVideoTitle(info),
                         url: _buildVideoUrl(info.id)
                     });
                 }
@@ -65,7 +69,7 @@ const _searchVideoInfo = (keyword) => {
 };
 
 const _stripCharacters = (str) => {
-    let updatedStr = str;
+    let updatedStr = str ? str : '';
 
     updatedStr = updatedStr.replace(/[\s|:?\.\\\/]/g, '-');
     updatedStr = updatedStr.replace(/-+/g, '-');
@@ -75,7 +79,8 @@ const _stripCharacters = (str) => {
 };
 
 const _formatVideoInfo = async (info, langSetting) => {
-    const strippedTitle = _stripCharacters(info.title);
+    const title = _getVideoTitle(info);
+    const strippedTitle = _stripCharacters(title);
 
     if (!langSetting) {
         return {
