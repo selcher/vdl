@@ -1,6 +1,6 @@
 {
   "name": "vdl",
-  "version": "1.0.15",
+  "version": "1.0.16",
   "description": "Command line tool for downloading videos from youtube",
   "bin": {
     "vdl": "./index.js"
