@@ -37,9 +37,27 @@ const _getVideoInfo = async (url) => {
     return info;
 };
 
-const _getVideoTitle = (info) => (
-    info ? info.title : 'vid'
-);
+const _getVideoTitle = (info) => {
+    if (!info) {
+      return 'vid';
+    }
+
+    if (info.title) {
+      return info.title;
+    }
+
+    let title = '';
+
+    try {
+        let playerResponse = JSON.parse(info.player_response);
+        title = playerResponse.videoDetails.title;
+    }
+    catch(exc) {
+        title = 'video';
+    }
+
+    return title;
+};
 
 const _buildVideoUrl = (id) => (
     `https://www.youtube.com/watch?v=${id}`
