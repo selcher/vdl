@@ -16,24 +16,25 @@ const terminal = require('./src/terminal');
 const package = require('./package.json');
 const name = package.name;
 const version = package.version;
+const siteUrl = package.repository.url;
 
 tasks.init = () => (
-    terminal.init({
-        name,
-        version,
-        usage: msg.usage,
-        help: () => {
-            log(msg.examples(name));
-        }
-    })
+  terminal.init({
+    name,
+    version,
+    usage: msg.usage,
+    help: () => {
+      log(msg.examples(name, siteUrl));
+    }
+  })
 );
 
 /**
  * Task: Close command-line interface
  */
 tasks.done = () => {
-    log(msg.done);
-    terminal.close();
+  log(msg.done);
+  terminal.close();
 };
 
 /**
@@ -41,46 +42,46 @@ tasks.done = () => {
  */
 const vid = require('./src/video');
 const downloadProgressLogger = (downloaded, total) => {
-    terminal.writeLine(msg.progress(downloaded, total));
+  terminal.writeLine(msg.progress(downloaded, total));
 
-    if (downloaded === total) {
-        terminal.clearLine();
-    }
+  if (downloaded === total) {
+    terminal.clearLine();
+  }
 };
 const downloadErrorHandler = (err) => {
-    if (!err) {
-        return;
-    }
+  if (!err) {
+    return;
+  }
 
-    if (program.error) {
-        log(msg.downloadFailed(err));
-    }
-    else {
-        log(msg.errDownloading);
-    }
+  if (program.error) {
+    log(msg.downloadFailed(err));
+  }
+  else {
+    log(msg.errDownloading);
+  }
 };
 const downloadFromUrl = (url) => {
-    log(msg.getInfo(url));
+  log(msg.getInfo(url));
 
-    return vid.getInfo(url)
-        .then(videoInfo => {
-            if (videoInfo.error) {
-                log(videoInfo.error);
-            }
+  return vid.getInfo(url)
+    .then(videoInfo => {
+      if (videoInfo.error) {
+        log(videoInfo.error);
+      }
 
-            log(msg.downloading(info.getFileName(videoInfo)));
+      log(msg.downloading(info.getFileName(videoInfo)));
 
-            return vid.downloadFromInfo(videoInfo);
-        });
+      return vid.downloadFromInfo(videoInfo);
+    });
 };
 
 tasks.downloadFromUrl = (url) => {
-    vid.setProgressLogger(downloadProgressLogger);
+  vid.setProgressLogger(downloadProgressLogger);
 
-    downloadFromUrl(url)
-        .then(videoDownloadedMsg => log(videoDownloadedMsg))
-        .catch((err) => downloadErrorHandler(err))
-        .finally(tasks.done);
+  downloadFromUrl(url)
+    .then(videoDownloadedMsg => log(videoDownloadedMsg))
+    .catch((err) => downloadErrorHandler(err))
+    .finally(tasks.done);
 };
 
 /**
@@ -88,84 +89,80 @@ tasks.downloadFromUrl = (url) => {
  */
 const fs = require('fs');
 const getFileContentAsList = (pathToFile) => {
-    const newLineChars = /\r\n/g;
-    const invalidChars = /\t\r\n\v\f/g;
-    const content = fs.readFileSync(pathToFile, 'utf-8');
-    let fileContentList = content.replace(newLineChars, '\n')
-        .split('\n')
-        .map(url => url ? url.replace(invalidChars, '') : '')
-        .filter(url => url);
+  const newLineChars = /\r\n/g;
+  const invalidChars = /\t\r\n\v\f/g;
+  const content = fs.readFileSync(pathToFile, 'utf-8');
+  let fileContentList = content.replace(newLineChars, '\n')
+    .split('\n')
+    .map(url => url ? url.replace(invalidChars, '') : '')
+    .filter(url => url);
 
-    return fileContentList;
+  return fileContentList;
 };
 
 tasks.downloadFromFile = (filePath) => {
-    log(msg.readFile(filePath));
+  log(msg.readFile(filePath));
 
-    const contentList = getFileContentAsList(filePath);
-    const totalItems = contentList.length;
+  const contentList = getFileContentAsList(filePath);
+  const totalItems = contentList.length;
 
-    log(msg.itemsFound(totalItems));
+  log(msg.itemsFound(totalItems));
 
-    if (totalItems === 0) {
-        tasks.done();
-        return;
+  if (totalItems === 0) {
+    tasks.done();
+    return;
+  }
+
+  const logCurrentItemOfTotalItems = ((total) => {
+    let counter = 1;
+
+    return (
+      () =>  { log(msg.itemOfTotal(counter++, total)); }
+    );
+  })(totalItems);
+
+  const searchAndDownload = (url) => {
+    logCurrentItemOfTotalItems();
+
+    let searchDone = null;
+
+    if (!url) {
+      searchDone = Promise.reject(msg.invalidUrl(url));
+    }
+    else if (!vid.isValidUrl(url)) {
+      // If the suffix doesn't start with 'http',
+      // assume it's a search.
+      searchDone = (
+        vid.searchInfo(url)
+          .then(searchResult => downloadFromUrl(searchResult.url))
+      );
+    }
+    else {
+        searchDone = downloadFromUrl(url);
     }
 
-    const logCurrentItemOfTotalItems = ((total) => {
-        let counter = 1;
+    searchDone
+      .then(videoDownloadedMsg => log(videoDownloadedMsg))
+      .then(downloadNextInFile)
+      .catch(downloadNextInFile);
+  };
 
-        return (
-            () => {
-                log(
-                    msg.itemOfTotal(counter++, total)
-                );
-            }
-        );
-    })(totalItems);
+  const downloadNextInFile = (err) => {
+    downloadErrorHandler(err);
 
-    const searchAndDownload = (url) => {
-        logCurrentItemOfTotalItems();
+    const nextUrl = contentList.shift();
 
-        let searchDone = null;
+    if (nextUrl) {
+      searchAndDownload(nextUrl);
+    }
+    else {
+      tasks.done();
+    }
+  };
 
-        if (!url) {
-            searchDone = Promise.reject(msg.invalidUrl(url));
-        }
-        else if (!vid.isValidUrl(url)) {
-            // If the suffix doesn't start with 'http',
-            // assume it's a search.
-            searchDone = (
-                vid.searchInfo(url)
-                    .then(searchResult => downloadFromUrl(searchResult.url))
-            );
-        }
-        else {
-            searchDone = downloadFromUrl(url);
-        }
+  vid.setProgressLogger(downloadProgressLogger);
 
-        searchDone
-            .then(videoDownloadedMsg => log(videoDownloadedMsg))
-            .then(downloadNextInFile)
-            .catch(downloadNextInFile);
-    };
-
-    const downloadNextInFile = (err) => {
-        downloadErrorHandler(err);
-
-        const nextUrl = contentList.shift();
-
-        if (nextUrl) {
-            searchAndDownload(nextUrl);
-        }
-        else {
-            tasks.done();
-        }
-    };
-
-    vid.setProgressLogger(downloadProgressLogger);
-
-    searchAndDownload(contentList.shift());
+  searchAndDownload(contentList.shift());
 };
 
 /**
@@ -175,28 +172,28 @@ tasks.downloadFromFile = (filePath) => {
 let commandFound = false;
 
 const onCommandFound = () => {
-    commandFound = true;
-    log(msg.about(name, version));
+  commandFound = true;
 };
+
+log(msg.about(name, version));
 
 const program = tasks.init();
 
 if (program.lang) {
-    vid.setLanguage(program.lang);
+  vid.setLanguage(program.lang);
 }
 
 if (program.url) {
-    onCommandFound();
-    tasks.downloadFromUrl(program.url);
+  onCommandFound();
+  tasks.downloadFromUrl(program.url);
 }
 
 if (program.file) {
-    onCommandFound();
-    tasks.downloadFromFile(program.file);
+  onCommandFound();
+  tasks.downloadFromFile(program.file);
 }
 
 if (!commandFound) {
-    log(msg.about(name, version));
-    log(msg.commandNotFound(name));
-    terminal.close();
+  log(msg.commandNotFound(name));
+  terminal.close();
 }

@@ -11,7 +11,7 @@ const getFileName = (info) => (_buildFileName(getTitle(info)));
 const getFilePath = (info) => (_buildFilePath(getTitle(info)));
 
 module.exports = {
-    getTitle,
-    getFileName,
-    getFilePath
+  getTitle,
+  getFileName,
+  getFilePath
 };
