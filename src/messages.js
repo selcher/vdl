@@ -9,6 +9,7 @@ const logSymbols = require('log-symbols');
 
 const msg = {
   about: (name, version) => [
+      '\n',
       chalk.white(` Video Downloader (${name.toUpperCase()})`),
       chalk.gray(`- ${version}`),
       '\n'
