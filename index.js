@@ -16,7 +16,7 @@ const terminal = require('./src/terminal');
 const package = require('./package.json');
 const name = package.name;
 const version = package.version;
-const siteUrl = package.repository.url;
+const siteUrl = package.repository.url.replace(/(git\+|\.git)/g, '');
 
 tasks.init = () => (
   terminal.init({
