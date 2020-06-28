@@ -169,6 +169,16 @@ const downloadFromUrl = (url) => {
     .then(videoInfo => downloadFromInfo(videoInfo));
 };
 
+const fallbackDownloadFromUrl = (url) => {
+  return new Promise((resolve, reject) => {
+    const stream = ytdl(url);
+
+    stream.pipe(fs.createWriteStream('video.mp4'))
+    stream.on('end', resolve);
+    stream.on('error', reject);
+  });
+};
+
 const downloadFromKeyword = (keyword) => {
   return searchInfo(keyword)
     .then(searchResult => downloadFromUrl(searchResult.url));
@@ -182,5 +192,6 @@ module.exports = {
   searchInfo,
   downloadFromInfo,
   downloadFromUrl,
+  fallbackDownloadFromUrl,
   downloadFromKeyword
 };

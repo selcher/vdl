@@ -72,6 +72,11 @@ const downloadFromUrl = (url) => {
       log(msg.downloading(info.getFileName(videoInfo)));
 
       return vid.downloadFromInfo(videoInfo);
+    })
+    .catch((err) => {
+      downloadErrorHandler(err);
+
+      return vid.fallbackDownloadFromUrl(url);
     });
 };
 
