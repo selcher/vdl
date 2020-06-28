@@ -76,6 +76,8 @@ const downloadFromUrl = (url) => {
     .catch((err) => {
       downloadErrorHandler(err);
 
+      log(msg.downloading(url));
+
       return vid.fallbackDownloadFromUrl(url);
     });
 };
