@@ -24,6 +24,6 @@
     "log-symbols": "2.1.0",
     "translate-google": "1.0.2",
     "youtube-dl": "3.0.2",
-    "ytdl-core": "2.1.7"
+    "ytdl-core": "4.4.2"
   }
 }
