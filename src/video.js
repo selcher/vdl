@@ -129,7 +129,10 @@ const _formatVideoInfo = async (info, langSetting) => {
 
 const _downloadFromVideoInfo = (videoInfo) => {
   return new Promise((resolve, reject) => {
-    ytdl.downloadFromInfo(videoInfo.info)
+    ytdl.downloadFromInfo(
+          videoInfo.info,
+          { "filter": "videoandaudio" }
+        )
         .on('error', (err) => reject(err))
         .on('progress', (chunk, downloaded, total) => {
           _progressLogger(downloaded, total);
